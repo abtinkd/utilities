@@ -3,7 +3,7 @@ import os, time
 
 ERROR_LOG_FILENAME = 'failure_{}.log'.format(time.strftime('%m%d_%H%M'))
 
-def apply_to(rootname, function, print_process=True, step=1000):
+def apply_to(rootname, function, print_process=False, step=1000):
     bad_files = []
     count = [0,0]
     tm = time.time()
@@ -28,5 +28,5 @@ def apply_to(rootname, function, print_process=True, step=1000):
                     f.write(filepath+'  '+str(e)+'\n')
                                     
     bd_str = '\n'.join(bad_files)
-    if print_function:
+    if print_process:
         print('\nunsuccessful tries:\n{}'.format(bd_str))
