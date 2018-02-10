@@ -73,8 +73,10 @@ def run_code_inplace(filepath, CSV_PATH = './csv'):
             os.chdir(cwd)            
             write_success_log('{}'.format(filepath), 'run_')
             os.chdir(path)
-        finally:            
-            join_csv = '?ls'
+        finally:
+            call(['pwd'])            
+            call(['ls'])
+            join_csv = '?less join.csv'
             while join_csv != 'n':                
                 if join_csv[0] == '?':
                     call(join_csv[1:].split())
@@ -105,12 +107,15 @@ def compile(filepath):
 
 import sys
 if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        root = sys.argv[1].strip()
-    else:
-        root  = './test/'
-    
-    td.apply_to(root, attach_username)
-    td.apply_to(root, fetch_files)
-    td.apply_to('./code', compile)
-    td.apply_to('./code', run_code_inplace)
+    root  = './test'
+    code = './code'
+    if len(sys.argv) > 2:
+        root = sys.argv[1]
+        code = sys.argv[2]
+    elif len(sys.argv) == 2:
+        root = sys.argv[1]
+
+    # td.apply_to(root, attach_username)
+    # td.apply_to(root, fetch_files)
+    # td.apply_to(code, compile)
+    td.apply_to(code, run_code_inplace)
