@@ -31,7 +31,7 @@ def attach_username(filepath):
         dirname = dirname.replace('.late', '-late')
         newfilename = dirname + '_' + filename
         os.rename(path+'/'+filename, path+'/'+newfilename)
-        write_success_log('{}  -->  {}\n'.format(path+'/'+filename, path+'/'+newfilename), '_attach')
+        write_success_log('{}  -->  {}\n'.format(path+'/'+filename, path+'/'+newfilename), 'attach_')
 
 def run_code_move(filepath, CSV_PATH = './csv', CPP_PATH = './cpp'):
     filename, dirname, path = break_filepath(filepath)
@@ -91,7 +91,7 @@ def fetch_files(filepath, COPY_DIR = './code'):
         if not os.path.exists(newpath):
             os.mkdir(newpath)            
         call(['cp', filepath, newpath])
-        write_success_log('{} {} {}'.format(os.path.exists(newpath), filepath, newpath), '_fetch')
+        write_success_log('{} {} {}'.format(os.path.exists(newpath), filepath, newpath), 'fetch_')
 
 def compile(filepath):
     filename, dirname, path = break_filepath(filepath)        
