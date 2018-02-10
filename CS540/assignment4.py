@@ -31,8 +31,7 @@ def attach_username(filepath):
         dirname = dirname.replace('.late', '-late')
         newfilename = dirname + '_' + filename
         os.rename(path+'/'+filename, path+'/'+newfilename)
-        with open(SUCCESS_LOG, 'a') as fp:
-                fp.write('{}  -->  {}\n'.format(path+'/'+filename, path+'/'+newfilename))
+        write_success_log('{}  -->  {}\n'.format(path+'/'+filename, path+'/'+newfilename), '_attach')
 
 def run_code_move(filepath, CSV_PATH = './csv', CPP_PATH = './cpp'):
     filename, dirname, path = break_filepath(filepath)
@@ -63,17 +62,26 @@ def run_code_inplace(filepath, CSV_PATH = './csv'):
         cwd = os.getcwd()
         os.chdir(path)
         print 'calling: {}'.format(filepath)
-        call([filepath])
-
-        join_csv = 'y'
-        while join_csv != 'n':        
-            call('ls')
-            join_csv = raw_input(': ')
-            if join_csv[0] == '?':
-                call(join_csv[1:].split())
-            else:
-                call(['less', join_csv])            
-        os.chdir(cwd)
+        
+        try:
+            call([filepath])            
+        except Exception as e:
+            print 'ERROR'
+            raise e
+        else:
+            print 'SUCCESS!'
+            os.chdir(cwd)            
+            write_success_log('{}'.format(filepath), 'run_')
+            os.chdir(path)
+        finally:            
+            join_csv = '?ls'
+            while join_csv != 'n':                
+                if join_csv[0] == '?':
+                    call(join_csv[1:].split())
+                else:
+                    call(['less', join_csv])
+                join_csv = raw_input(': ')
+            os.chdir(cwd) 
 
 
 def fetch_files(filepath, COPY_DIR = './code'):    
@@ -83,7 +91,7 @@ def fetch_files(filepath, COPY_DIR = './code'):
         if not os.path.exists(newpath):
             os.mkdir(newpath)            
         call(['cp', filepath, newpath])
-        write_success_log('{} {} {}'.format(os.path.exists(newpath), filepath, newpath))
+        write_success_log('{} {} {}'.format(os.path.exists(newpath), filepath, newpath), '_fetch')
 
 def compile(filepath):
     filename, dirname, path = break_filepath(filepath)        
@@ -102,4 +110,7 @@ if __name__ == '__main__':
     else:
         root  = './test/'
     
-    td.apply_to(root, run_code_inplace)
+    td.apply_to(root, attach_username)
+    td.apply_to(root, fetch_files)
+    td.apply_to('./code', compile)
+    td.apply_to('./code', run_code_inplace)
