@@ -5,6 +5,10 @@ from subprocess import call
 
 SUCCESS_LOG = 'success_{}.log'.format(time.strftime('%m%d_%H%M'))
 
+def write_success_log(message, file_prefix=''):
+    with open(file_prefix+SUCCESS_LOG, 'a') as fp:
+                fp.write("{}\n".format(message))
+
 def break_filepath(filepath):
     parts = filepath.rsplit('/', 2)
     if len(parts) > 2:
@@ -30,11 +34,12 @@ def attach_username(filepath):
         with open(SUCCESS_LOG, 'a') as fp:
                 fp.write('{}  -->  {}\n'.format(path+'/'+filename, path+'/'+newfilename))
 
-def run_code(filepath, CSV_PATH = './csv', CPP_PATH = './cpp'):
+def run_code_move(filepath, CSV_PATH = './csv', CPP_PATH = './cpp'):
     filename, dirname, path = break_filepath(filepath)
-    newpath = path+'/'+ filename.split('.')[0]
-    cpp_filepath = CPP_PATH + '/' + filename.split('.')[0] + '.cpp'
+    newpath = path+'/'+ filename.split('.')[0]    
     os.mkdir(newpath)
+
+    cpp_filepath = CPP_PATH + '/' + filename.split('.')[0] + '.cpp'
     
     call(["mv",filepath, newpath])
     call(['cp', '-r', CSV_PATH+'/.', newpath])
@@ -51,19 +56,43 @@ def run_code(filepath, CSV_PATH = './csv', CPP_PATH = './cpp'):
         call(['less', join_csv])    
     os.chdir(cwd)
 
+def run_code_inplace(filepath, CSV_PATH = './csv'):
+    if filepath[-4:].lower() == '.out':
+        filename, dirname, path = break_filepath(filepath)        
+        call(['cp', '-r', CSV_PATH+'/.', path])    
+        cwd = os.getcwd()
+        os.chdir(path)
+        print 'calling: {}'.format(filepath)
+        call([filepath])
+
+        join_csv = 'y'
+        while join_csv != 'n':        
+            call('ls')
+            join_csv = raw_input(': ')
+            if join_csv[0] == '?':
+                call(join_csv[1:].split())
+            else:
+                call(['less', join_csv])            
+        os.chdir(cwd)
+
+
+def fetch_files(filepath, COPY_DIR = './code'):    
+    filename, dirname, path = break_filepath(filepath)
+    if filename[-4:].lower() == '.cpp' or filename[-4:].lower() == '.out':
+        newpath = COPY_DIR+'/'+ dirname
+        if not os.path.exists(newpath):
+            os.mkdir(newpath)            
+        call(['cp', filepath, newpath])
+        write_success_log('{} {} {}'.format(os.path.exists(newpath), filepath, newpath))
 
 def compile(filepath):
-        path = filepath.rsplit('/',1)
-        if len(path) > 1:
-            filename = path[1]
-            path = path[0]
-        else:
-            filename = path
-            path = ''
+    filename, dirname, path = break_filepath(filepath)        
+    if filename[-4:].lower() == '.cpp':
         username = filename.split('_',1)[0]
-        call(["g++",filepath,"-o", "{}/out/{}_main.out".format(path, username)])
-        with open(SUCCESS_LOG, 'a') as fp:
-                fp.write("g++ {} -o {}/out/{}_main.out\n".format(filepath, path, username))
+        x = call(["g++",filepath,"-o", "{}/A_{}_main.out".format(path, username)])
+        if x:
+            raise ValueError(username)
+        write_success_log("g++ {} -o {}/A_{}_main.out".format(filepath, path, username), 'compile_')        
 
 
 import sys
@@ -73,4 +102,4 @@ if __name__ == '__main__':
     else:
         root  = './test/'
     
-    td.apply_to(root, run_code)    
+    td.apply_to(root, run_code_inplace)
