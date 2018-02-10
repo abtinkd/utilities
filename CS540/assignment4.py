@@ -5,26 +5,52 @@ from subprocess import call
 
 SUCCESS_LOG = 'success_{}.log'.format(time.strftime('%m%d_%H%M'))
 
-def attach_username(filepath):
-        parts = filepath.rsplit('/', 2)
-        if len(parts) > 2:
-            filename = parts[2]
-            dirname = parts[1]
-            path = parts[0] + '/' + dirname
-        elif len(parts) == 2:
-            filename = parts[1]
-            dirname = parts[0]
-            path = dirname
-        else:
-            filename = filepath
-            dirname = ''
-            path = '.'
+def break_filepath(filepath):
+    parts = filepath.rsplit('/', 2)
+    if len(parts) > 2:
+        filename = parts[2]
+        dirname = parts[1]
+        path = parts[0] + '/' + dirname
+    elif len(parts) == 2:
+        filename = parts[1]
+        dirname = parts[0]
+        path = dirname
+    else:
+        filename = filepath
+        dirname = ''
+        path = '.'
+    return filename, dirname, path
 
-        dirname = dirname.replace('.late', '')
+
+def attach_username(filepath):       
+        filename, dirname, path = break_filepath(filepath)
+        dirname = dirname.replace('.late', '-late')
         newfilename = dirname + '_' + filename
         os.rename(path+'/'+filename, path+'/'+newfilename)
         with open(SUCCESS_LOG, 'a') as fp:
                 fp.write('{}  -->  {}\n'.format(path+'/'+filename, path+'/'+newfilename))
+
+def run_code(filepath, CSV_PATH = './csv', CPP_PATH = './cpp'):
+    filename, dirname, path = break_filepath(filepath)
+    newpath = path+'/'+ filename.split('.')[0]
+    cpp_filepath = CPP_PATH + '/' + filename.split('.')[0] + '.cpp'
+    os.mkdir(newpath)
+    
+    call(["mv",filepath, newpath])
+    call(['cp', '-r', CSV_PATH+'/.', newpath])
+    call(['cp', cpp_filepath, newpath])
+    cwd = os.getcwd()
+    os.chdir(newpath)
+    print 'calling: {}/{}'.format(newpath, filename)
+    call(['{}/{}'.format(newpath, filename)])    
+    
+    join_csv = 'y'
+    while join_csv != 'n':        
+        call('ls')
+        join_csv = raw_input(': ')
+        call(['less', join_csv])    
+    os.chdir(cwd)
+
 
 def compile(filepath):
         path = filepath.rsplit('/',1)
@@ -47,4 +73,4 @@ if __name__ == '__main__':
     else:
         root  = './test/'
     
-    td.apply_to(root, attach_username)
+    td.apply_to(root, run_code)    
