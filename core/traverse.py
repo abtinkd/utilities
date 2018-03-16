@@ -5,7 +5,7 @@ import time
 ERROR_LOG_FILENAME = 'failure_{}.log'.format(time.strftime('%m%d_%H%M'))
 
 
-def apply_to(root_path, apply_func, print_process=False, log_step=1000):
+def apply(root_path, apply_func, print_process=False, log_step=1000):
     # Applies the given function on every files in the root_path
     bad_files = []
     count = [0, 0]
