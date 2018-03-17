@@ -3,7 +3,6 @@ import os
 import time
 from subprocess import call
 
-
 SUCCESS_LOG = 'SUCCESS_{}.log'.format(time.strftime('%m%d_%H%M'))
 
 
@@ -36,23 +35,29 @@ def append_parent_dirname(file_path):
 
 def run_bash_commands(command, file_path):
     file_name, dir_name, cur_path = break_file_path(file_path)
-    command = command.replace('{}', file_name)
 
-    more_cmd_inplace = False
-    if command[0] == '@':
-        more_cmd_inplace = True
-        if len(command) == 1:
-            command = 'pwd'
-        else:
-            command = command[1:]
+    cmd_inplace = False
+    extension = None
+    if '@' in command:
+        if command[-1] == '@':
+            command += 'echo <>'
+        flags, command = command.split('@', 1)
+        flags = flags.split()
+        for flg in flags:
+            if flg == 'I':
+                cmd_inplace = True
+            elif 'f=' in flg:
+                extension = '.' + flg[2:].replace('.', '')
+    if extension and extension not in file_name:
+        return
+    command = command.replace('<>', file_name)
 
     cwd = os.getcwd()
 
-    print('Current file: ' + file_path)
     try:
         os.chdir(cur_path)
         call(command.split())
-        if more_cmd_inplace:
+        if cmd_inplace:
             command = input(': ')
             while command.strip() != 'n':
                 call(command.split())
