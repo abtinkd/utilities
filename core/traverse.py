@@ -33,3 +33,12 @@ def apply(root_path, apply_func, print_process=False, log_step=1000):
     bd_str = '\n'.join(bad_files)
     if print_process:
         print('\nunsuccessful tries:\n{}'.format(bd_str))
+
+
+# A file-path generator as it traverses the root_path
+def access(root_path):
+    tm = time.time()
+    for root, _, files in os.walk(root_path):
+        for f in files:
+            file_path = os.path.abspath(root + '/' + f)
+            yield f, file_path
