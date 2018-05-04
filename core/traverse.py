@@ -37,8 +37,7 @@ def apply(root_path, apply_func, print_process=False, log_step=1000):
 
 # A file-path generator as it traverses the root_path
 def access(root_path):
-    tm = time.time()
     for root, _, files in os.walk(root_path):
-        for f in files:
-            file_path = os.path.abspath(root + '/' + f)
-            yield f, file_path
+        for filename in files:
+            abs_path = os.path.abspath(root)
+            yield filename, abs_path
